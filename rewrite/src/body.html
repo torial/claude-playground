@@ -1,0 +1,84 @@
+<div class="app">
+  <header class="masthead">
+    <div class="wordmark">
+      <h1>Rewrite</h1>
+      <p>Write the rules. The machine does the rest.</p>
+    </div>
+    <nav class="levels" id="levels" aria-label="Levels"></nav>
+  </header>
+
+  <main class="grid">
+    <section class="col col-left">
+      <article class="card brief" id="brief" aria-live="polite"></article>
+
+      <section class="card rules" aria-labelledby="rules-h">
+        <div class="card-head">
+          <h2 id="rules-h">Rules</h2>
+          <p class="sub">Read top to bottom. The first rule that matches wins.</p>
+        </div>
+        <div id="rule-list" class="rule-list"></div>
+        <div class="rule-actions">
+          <button type="button" id="add-rule" class="btn">Add rule</button>
+          <button type="button" id="clear-rules" class="btn btn-quiet">Clear all</button>
+        </div>
+      </section>
+    </section>
+
+    <section class="col col-right">
+      <section class="card machine" aria-labelledby="machine-h">
+        <div class="card-head">
+          <h2 id="machine-h">Machine</h2>
+          <p class="sub" id="machine-sub"></p>
+        </div>
+
+        <div class="trial">
+          <label for="trial-input">Input string</label>
+          <div class="trial-row">
+            <input id="trial-input" class="mono-input" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" maxlength="60" />
+            <button type="button" id="random-input" class="btn btn-quiet">Random</button>
+          </div>
+          <div class="chips" id="input-chips" aria-label="Test inputs"></div>
+        </div>
+
+        <div class="tape-wrap">
+          <div class="tape" id="tape" aria-label="Current string"></div>
+          <div class="expect" id="expect"></div>
+        </div>
+
+        <div class="controls">
+          <button type="button" id="btn-reset" class="btn">Reset</button>
+          <button type="button" id="btn-step" class="btn">Step</button>
+          <button type="button" id="btn-run" class="btn btn-primary">Run</button>
+          <button type="button" id="btn-end" class="btn">To end</button>
+          <label class="speed" for="speed">Speed
+            <input id="speed" type="range" min="1" max="5" value="3" />
+          </label>
+        </div>
+
+        <p class="status" id="status" role="status" aria-live="polite"></p>
+
+        <details class="log" id="log-wrap">
+          <summary>Step log</summary>
+          <ol id="log" class="log-list"></ol>
+        </details>
+      </section>
+
+      <section class="card tests" id="tests-card" aria-labelledby="tests-h">
+        <div class="card-head">
+          <h2 id="tests-h">Tests</h2>
+          <p class="sub" id="tests-sub"></p>
+        </div>
+        <div id="test-list" class="test-list"></div>
+        <div class="check-row">
+          <button type="button" id="btn-check" class="btn btn-primary">Check my rules</button>
+          <span class="check-note" id="check-note"></span>
+        </div>
+        <div id="verdict" class="verdict" role="status" aria-live="polite"></div>
+      </section>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <p>The machine is a Markov algorithm, described by A. A. Markov Jr. in the 1950s. Progress is saved in this browser only.</p>
+  </footer>
+</div>

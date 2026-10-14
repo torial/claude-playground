@@ -1,0 +1,1316 @@
+<title>Rewrite</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: a two-column workbench. Left, the brief and the rule list you edit.
+   Right, the machine (tape, controls, log) and the tests. One column on a phone.
+   Motif: type composition. Characters are metal sorts on a galley, markers you
+   invent are set in a different metal. */
+:root {
+  --paper: #e6eced;
+  --card: #f4f8f8;
+  --ink: #14262b;
+  --ink-2: #4a5f66;
+  --rule: #b7c6c9;
+  --tile: #fbfdfd;
+  --tile-edge: #94a9ae;
+  --marker: #7a4300;
+  --marker-bg: #f6e3bb;
+  --marker-edge: #cfa655;
+  --accent: #b5154f;
+  --accent-soft: #f6d6e2;
+  --good: #176a49;
+  --good-soft: #cdebdd;
+  --bad: #a8332a;
+  --bad-soft: #f4d4cf;
+  --shadow: 0 1px 0 rgba(20, 38, 43, 0.06);
+
+  --display: "Big Shoulders Display", "Arial Narrow", Impact, sans-serif;
+  --body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #0d181b;
+    --card: #142327;
+    --ink: #dbe8ea;
+    --ink-2: #8da5aa;
+    --rule: #2a4046;
+    --tile: #20363c;
+    --tile-edge: #0a1214;
+    --marker: #f2c879;
+    --marker-bg: #3b2d12;
+    --marker-edge: #6b5223;
+    --accent: #ff7ea8;
+    --accent-soft: #4a1e30;
+    --good: #5fd1a2;
+    --good-soft: #12392b;
+    --bad: #ff8d7b;
+    --bad-soft: #48211b;
+    --shadow: 0 1px 0 rgba(0, 0, 0, 0.35);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #0d181b;
+  --card: #142327;
+  --ink: #dbe8ea;
+  --ink-2: #8da5aa;
+  --rule: #2a4046;
+  --tile: #20363c;
+  --tile-edge: #0a1214;
+  --marker: #f2c879;
+  --marker-bg: #3b2d12;
+  --marker-edge: #6b5223;
+  --accent: #ff7ea8;
+  --accent-soft: #4a1e30;
+  --good: #5fd1a2;
+  --good-soft: #12392b;
+  --bad: #ff8d7b;
+  --bad-soft: #48211b;
+  --shadow: 0 1px 0 rgba(0, 0, 0, 0.35);
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--body);
+  font-size: 15px;
+  line-height: 1.5;
+}
+.app {
+  max-width: 1180px;
+  margin-inline: auto;
+  padding-inline: 16px;
+  padding-block: 20px 28px;
+}
+
+/* ---- masthead ---- */
+.masthead { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 14px 28px; margin-bottom: 18px; }
+.wordmark h1 {
+  margin: 0;
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: clamp(2.6rem, 8vw, 3.8rem);
+  line-height: 0.9;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.wordmark p { margin: 4px 0 0; color: var(--ink-2); font-size: 0.9rem; }
+.levels { display: flex; flex-wrap: wrap; gap: 6px; min-width: 0; }
+.level-chip {
+  font: inherit;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 5px 10px 6px;
+  border: 1px solid var(--rule);
+  border-bottom-width: 3px;
+  border-radius: 3px;
+  background: var(--card);
+  color: var(--ink);
+  cursor: pointer;
+}
+.level-chip .n { font-family: var(--mono); font-size: 0.78rem; color: var(--ink-2); }
+.level-chip .nm { font-weight: 600; font-size: 0.88rem; }
+.level-chip .done { font-family: var(--mono); font-size: 0.72rem; color: var(--good); }
+.level-chip[aria-current="true"] { border-color: var(--ink); background: var(--tile); }
+.level-chip:hover { border-color: var(--ink-2); }
+
+/* ---- layout ---- */
+.grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; align-items: start; }
+.col { display: grid; gap: 16px; min-width: 0; }
+@media (min-width: 940px) { .grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1.08fr); } }
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  padding: 16px;
+  box-shadow: var(--shadow);
+  min-width: 0;
+}
+.card-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 12px; margin-bottom: 12px; }
+.card-head h2 {
+  margin: 0;
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 1.35rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.sub { margin: 0; color: var(--ink-2); font-size: 0.85rem; }
+
+/* ---- brief ---- */
+.brief .level-no { font-family: var(--mono); font-size: 0.78rem; color: var(--ink-2); letter-spacing: 0.08em; text-transform: uppercase; }
+.brief h2 {
+  margin: 2px 0 8px;
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: 2.3rem;
+  line-height: 1;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+.brief .task { margin: 0 0 10px; font-size: 1.05rem; max-width: 62ch; text-wrap: pretty; }
+.brief .lesson { margin: 0 0 10px; color: var(--ink-2); max-width: 62ch; text-wrap: pretty; }
+.brief .meta { display: flex; flex-wrap: wrap; gap: 6px 18px; margin: 0 0 8px; font-size: 0.85rem; color: var(--ink-2); }
+.brief .meta b { color: var(--ink); font-weight: 600; }
+.brief details { margin-top: 6px; }
+summary { cursor: pointer; font-weight: 600; font-size: 0.88rem; }
+summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.brief details p { margin: 6px 0 0; max-width: 62ch; color: var(--ink-2); }
+.howto { margin: 6px 0 0; padding-left: 1.1em; color: var(--ink-2); }
+.howto li { margin: 2px 0; }
+.solved-tag { display: inline-block; margin-left: 8px; padding: 1px 8px; border-radius: 2px; background: var(--good-soft); color: var(--good); font-size: 0.78rem; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; vertical-align: middle; }
+
+/* ---- buttons / inputs ---- */
+.btn {
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 600;
+  padding: 6px 13px 7px;
+  border: 1px solid var(--ink-2);
+  border-bottom-width: 3px;
+  border-radius: 3px;
+  background: var(--card);
+  color: var(--ink);
+  cursor: pointer;
+}
+.btn:hover { border-color: var(--ink); }
+.btn:active { transform: translateY(1px); border-bottom-width: 2px; }
+.btn:disabled { opacity: 0.45; cursor: default; transform: none; }
+.btn-primary { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.btn-quiet { border-color: var(--rule); font-weight: 500; color: var(--ink-2); }
+.btn:focus-visible, .level-chip:focus-visible, .chip:focus-visible, .icon-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.mono-input {
+  font-family: var(--mono);
+  font-size: 1rem;
+  padding: 6px 8px;
+  min-width: 0;
+  width: 100%;
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  background: var(--tile);
+  color: var(--ink);
+}
+.mono-input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; border-color: var(--accent); }
+.mono-input::placeholder { color: var(--ink-2); opacity: 0.8; font-family: var(--body); font-size: 0.82rem; }
+
+/* ---- rules ---- */
+.rule-list { display: grid; gap: 8px; }
+.rule {
+  display: grid;
+  grid-template-columns: 1.6rem minmax(0, 1fr) auto minmax(0, 1fr);
+  gap: 6px 8px;
+  align-items: center;
+  padding: 6px 8px 6px 6px;
+  border: 1px solid var(--rule);
+  border-left-width: 4px;
+  border-radius: 3px;
+  background: var(--paper);
+}
+.rule.next { border-color: var(--accent); background: var(--accent-soft); }
+.rule .pri { font-family: var(--mono); font-size: 0.78rem; color: var(--ink-2); text-align: center; }
+.rule .arrow { color: var(--ink-2); font-family: var(--mono); }
+.rule .row-tools { grid-column: 2 / -1; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; }
+.stop-toggle { display: inline-flex; align-items: center; gap: 6px; font-size: 0.82rem; color: var(--ink-2); cursor: pointer; }
+.stop-toggle input { accent-color: var(--accent); width: 1rem; height: 1rem; }
+.rule.is-blank { opacity: 0.7; }
+.blank-note { font-size: 0.78rem; color: var(--ink-2); }
+.spacer { flex: 1; }
+.icon-btn {
+  font: inherit;
+  font-size: 0.8rem;
+  min-width: 2rem;
+  padding: 2px 6px;
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  background: var(--card);
+  color: var(--ink-2);
+  cursor: pointer;
+}
+.icon-btn:hover:not(:disabled) { color: var(--ink); border-color: var(--ink-2); }
+.icon-btn:disabled { opacity: 0.35; cursor: default; }
+.rule-actions { display: flex; gap: 8px; margin-top: 12px; }
+
+/* ---- machine ---- */
+.trial label { display: block; font-size: 0.82rem; font-weight: 600; margin-bottom: 4px; }
+.trial-row { display: flex; gap: 8px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.chip {
+  font: inherit;
+  font-family: var(--mono);
+  font-size: 0.82rem;
+  padding: 2px 9px 3px;
+  min-width: 2.2rem;
+  border: 1px solid var(--rule);
+  border-radius: 12px;
+  background: var(--card);
+  color: var(--ink);
+  cursor: pointer;
+}
+.chip[aria-pressed="true"] { border-color: var(--ink); background: var(--tile); font-weight: 600; }
+.chip .tick { margin-left: 5px; }
+.chip.ok .tick { color: var(--good); }
+.chip.no .tick { color: var(--bad); }
+
+.tape-wrap { margin: 14px 0 8px; }
+.tape {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  min-height: 3.6rem;
+  align-content: flex-start;
+  padding: 10px;
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  background: var(--paper);
+}
+.tile {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.1rem;
+  height: 2.6rem;
+  font-family: var(--mono);
+  font-size: 1.25rem;
+  font-weight: 500;
+  color: var(--ink);
+  background: var(--tile);
+  border: 1px solid var(--tile-edge);
+  border-bottom-width: 4px;
+  border-radius: 2px;
+}
+.tile.marker { background: var(--marker-bg); color: var(--marker); border-color: var(--marker-edge); }
+.tile.match { outline: 2px solid var(--accent); outline-offset: 1px; }
+.tile.fresh { animation: drop 0.28s ease-out; box-shadow: 0 0 0 2px var(--good-soft); }
+.caret { width: 4px; height: 2.6rem; border-radius: 2px; background: var(--accent); align-self: center; }
+.empty-tape { align-self: center; color: var(--ink-2); font-size: 0.9rem; font-style: italic; padding: 0 4px; }
+@keyframes drop { from { transform: translateY(-8px); opacity: 0.2; } to { transform: none; opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .tile.fresh { animation: none; } }
+
+.expect { margin-top: 6px; font-size: 0.85rem; color: var(--ink-2); min-height: 1.3em; }
+.expect code { font-family: var(--mono); font-size: 0.88rem; color: var(--ink); }
+.expect .match-yes { color: var(--good); font-weight: 600; }
+.expect .match-no { color: var(--bad); font-weight: 600; }
+
+.controls { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.speed { display: inline-flex; align-items: center; gap: 8px; margin-left: auto; font-size: 0.82rem; color: var(--ink-2); }
+.speed input { width: 90px; accent-color: var(--accent); }
+.status { margin: 10px 0 0; font-size: 0.88rem; min-height: 1.4em; }
+.status .k { font-family: var(--mono); color: var(--ink-2); }
+
+.log { margin-top: 10px; }
+.log-list {
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+  max-height: 14rem;
+  overflow: auto;
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  background: var(--paper);
+  font-family: var(--mono);
+  font-size: 0.8rem;
+}
+.log-list li { display: flex; gap: 10px; padding: 3px 8px; border-bottom: 1px solid var(--rule); cursor: pointer; white-space: pre; }
+.log-list li:last-child { border-bottom: 0; }
+.log-list li.now { background: var(--accent-soft); }
+.log-list .i { color: var(--ink-2); min-width: 3ch; text-align: right; }
+.log-list .rl { color: var(--ink-2); }
+.log-list .s { overflow: hidden; text-overflow: ellipsis; }
+
+/* ---- tests ---- */
+.test-list { display: grid; gap: 4px; }
+.test-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) 1.4rem;
+  gap: 8px;
+  align-items: center;
+  padding: 5px 8px;
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  background: var(--paper);
+  font: inherit;
+  text-align: left;
+  color: var(--ink);
+  cursor: pointer;
+  width: 100%;
+}
+.test-row:hover { border-color: var(--ink-2); }
+.test-row:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.test-row[aria-pressed="true"] { border-color: var(--ink); }
+.test-row .cell { font-family: var(--mono); font-size: 0.88rem; overflow-wrap: anywhere; min-width: 0; }
+.test-row .cell small { display: block; font-family: var(--body); font-size: 0.68rem; color: var(--ink-2); letter-spacing: 0.06em; text-transform: uppercase; }
+.test-row .arrow { color: var(--ink-2); }
+.test-row .mark { font-weight: 700; text-align: center; }
+.test-row.ok .mark { color: var(--good); }
+.test-row.no .mark { color: var(--bad); }
+.test-row.no { background: var(--bad-soft); border-color: var(--bad); }
+.test-row.ok { background: var(--good-soft); border-color: transparent; }
+.check-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-top: 12px; }
+.check-note { font-size: 0.82rem; color: var(--ink-2); }
+.verdict:not(:empty) { margin-top: 12px; padding: 12px 14px; border-radius: 3px; border: 1px solid var(--rule); background: var(--paper); }
+.verdict.win { border-color: var(--good); background: var(--good-soft); }
+.verdict.lose { border-color: var(--bad); background: var(--bad-soft); }
+.verdict h3 { margin: 0 0 4px; font-family: var(--display); font-weight: 800; font-size: 1.4rem; letter-spacing: 0.05em; text-transform: uppercase; }
+.verdict p { margin: 2px 0; }
+.verdict code { font-family: var(--mono); font-size: 0.88rem; }
+.verdict .btn { margin-top: 8px; margin-right: 8px; }
+
+.foot { margin-top: 22px; color: var(--ink-2); font-size: 0.8rem; max-width: 70ch; }
+.foot p { margin: 0; }
+
+@media (max-width: 520px) {
+  .tile { width: 1.8rem; height: 2.3rem; font-size: 1.1rem; }
+  .caret { height: 2.3rem; }
+  .brief h2 { font-size: 2rem; }
+  .speed { margin-left: 0; }
+  .test-row { grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) 1.2rem; gap: 6px; }
+}
+
+</style>
+<div class="app">
+  <header class="masthead">
+    <div class="wordmark">
+      <h1>Rewrite</h1>
+      <p>Write the rules. The machine does the rest.</p>
+    </div>
+    <nav class="levels" id="levels" aria-label="Levels"></nav>
+  </header>
+
+  <main class="grid">
+    <section class="col col-left">
+      <article class="card brief" id="brief" aria-live="polite"></article>
+
+      <section class="card rules" aria-labelledby="rules-h">
+        <div class="card-head">
+          <h2 id="rules-h">Rules</h2>
+          <p class="sub">Read top to bottom. The first rule that matches wins.</p>
+        </div>
+        <div id="rule-list" class="rule-list"></div>
+        <div class="rule-actions">
+          <button type="button" id="add-rule" class="btn">Add rule</button>
+          <button type="button" id="clear-rules" class="btn btn-quiet">Clear all</button>
+        </div>
+      </section>
+    </section>
+
+    <section class="col col-right">
+      <section class="card machine" aria-labelledby="machine-h">
+        <div class="card-head">
+          <h2 id="machine-h">Machine</h2>
+          <p class="sub" id="machine-sub"></p>
+        </div>
+
+        <div class="trial">
+          <label for="trial-input">Input string</label>
+          <div class="trial-row">
+            <input id="trial-input" class="mono-input" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" maxlength="60" />
+            <button type="button" id="random-input" class="btn btn-quiet">Random</button>
+          </div>
+          <div class="chips" id="input-chips" aria-label="Test inputs"></div>
+        </div>
+
+        <div class="tape-wrap">
+          <div class="tape" id="tape" aria-label="Current string"></div>
+          <div class="expect" id="expect"></div>
+        </div>
+
+        <div class="controls">
+          <button type="button" id="btn-reset" class="btn">Reset</button>
+          <button type="button" id="btn-step" class="btn">Step</button>
+          <button type="button" id="btn-run" class="btn btn-primary">Run</button>
+          <button type="button" id="btn-end" class="btn">To end</button>
+          <label class="speed" for="speed">Speed
+            <input id="speed" type="range" min="1" max="5" value="3" />
+          </label>
+        </div>
+
+        <p class="status" id="status" role="status" aria-live="polite"></p>
+
+        <details class="log" id="log-wrap">
+          <summary>Step log</summary>
+          <ol id="log" class="log-list"></ol>
+        </details>
+      </section>
+
+      <section class="card tests" id="tests-card" aria-labelledby="tests-h">
+        <div class="card-head">
+          <h2 id="tests-h">Tests</h2>
+          <p class="sub" id="tests-sub"></p>
+        </div>
+        <div id="test-list" class="test-list"></div>
+        <div class="check-row">
+          <button type="button" id="btn-check" class="btn btn-primary">Check my rules</button>
+          <span class="check-note" id="check-note"></span>
+        </div>
+        <div id="verdict" class="verdict" role="status" aria-live="polite"></div>
+      </section>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <p>The machine is a Markov algorithm, described by A. A. Markov Jr. in the 1950s. Progress is saved in this browser only.</p>
+  </footer>
+</div>
+
+<script>
+// Rewrite: engine and levels. Plain script so the same file runs in the browser
+// (inlined by build.cjs) and in Node (tests/run.cjs).
+//
+// The machine is a Markov algorithm. Rules are ordered. On every step it finds
+// the first rule, from the top, whose pattern occurs in the string, rewrites the
+// leftmost occurrence, and starts again from the top. An empty pattern occurs
+// at the very start of every string. It stops when no rule matches, or after a
+// rule marked "stop" has fired.
+const Rewrite = (() => {
+  const MAX_STEPS = 5000;
+  const MAX_LEN = 300;
+
+  // Spaces never matter, so they are removed wherever text enters the machine.
+  const clean = (t) => String(t).replace(/\s+/g, '');
+  const isBlank = (r) => r.from === '' && r.to === '' && !r.halt;
+
+  // Rows the player left completely empty are ignored; nothing else is.
+  function activeRules(rules) {
+    return rules
+      .map((r) => ({ from: clean(r.from), to: clean(r.to), halt: !!r.halt }))
+      .filter((r) => !isBlank(r));
+  }
+
+  // status: 'done' (no rule matched), 'halted' (a stop rule fired),
+  //         'limit' (too many steps), 'overflow' (string grew past MAX_LEN).
+  function run(rules, input, opts = {}) {
+    const rs = opts.prepared ? rules : activeRules(rules);
+    const trace = opts.trace ? [] : null;
+    let s = clean(input);
+    let steps = 0;
+    let status = 'done';
+    while (true) {
+      let hit = -1;
+      let pos = 0;
+      for (let i = 0; i < rs.length; i++) {
+        const p = rs[i].from === '' ? 0 : s.indexOf(rs[i].from);
+        if (p >= 0) {
+          hit = i;
+          pos = p;
+          break;
+        }
+      }
+      if (hit < 0) break;
+      if (steps >= MAX_STEPS) {
+        status = 'limit';
+        break;
+      }
+      const r = rs[hit];
+      const after = s.slice(0, pos) + r.to + s.slice(pos + r.from.length);
+      if (trace) trace.push({ rule: hit, pos, len: r.from.length, before: s, after });
+      s = after;
+      steps++;
+      if (s.length > MAX_LEN) {
+        status = 'overflow';
+        break;
+      }
+      if (r.halt) {
+        status = 'halted';
+        break;
+      }
+    }
+    return { output: s, steps, status, trace };
+  }
+
+  // ---- tiny seeded generator so "hidden" cases are the same on every run ----
+  function rng(seed) {
+    let a = seed >>> 0;
+    return () => {
+      a = (a + 0x6d2b79f5) >>> 0;
+      let t = a;
+      t = Math.imul(t ^ (t >>> 15), t | 1);
+      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+  function allStrings(alphabet, maxLen, minLen = 0) {
+    const out = [];
+    let layer = [''];
+    if (minLen === 0) out.push('');
+    for (let n = 1; n <= maxLen; n++) {
+      const next = [];
+      for (const w of layer) for (const c of alphabet) next.push(w + c);
+      layer = next;
+      if (n >= minLen) out.push(...layer);
+    }
+    return out;
+  }
+  function randomStrings(alphabet, count, minLen, maxLen, seed) {
+    const r = rng(seed);
+    const out = [];
+    for (let i = 0; i < count; i++) {
+      const n = minLen + Math.floor(r() * (maxLen - minLen + 1));
+      let w = '';
+      for (let k = 0; k < n; k++) w += alphabet[Math.floor(r() * alphabet.length)];
+      out.push(w);
+    }
+    return out;
+  }
+  function randomBalanced(count, maxPairs, seed) {
+    const r = rng(seed);
+    const out = [];
+    for (let i = 0; i < count; i++) {
+      const pairs = 1 + Math.floor(r() * maxPairs);
+      let open = 0;
+      let left = pairs;
+      let w = '';
+      while (left > 0 || open > 0) {
+        if (left > 0 && (open === 0 || r() < 0.5)) {
+          w += '(';
+          open++;
+          left--;
+        } else {
+          w += ')';
+          open--;
+        }
+      }
+      out.push(w);
+    }
+    return out;
+  }
+
+  // ---- levels ----------------------------------------------------------
+  const R = (from, to, halt = false) => ({ from, to, halt });
+
+  const levels = [
+    {
+      id: 'flip',
+      name: 'Flip',
+      alphabet: 'ab',
+      brief: 'Strings of a and b come in. Every a has to leave as a b.',
+      lesson:
+        'A rule is a pattern and a replacement. The machine looks for the pattern in the string and swaps it out. It keeps going until no rule matches.',
+      hint: 'One rule is enough. Watch how many steps a long string takes.',
+      visible: ['aaa', 'abab', 'b', ''],
+      spec: (w) => w.replace(/a/g, 'b'),
+      hidden: () => [...allStrings('ab', 7), ...randomStrings('ab', 20, 8, 14, 11)],
+      solution: [R('a', 'b')],
+    },
+    {
+      id: 'sort',
+      name: 'Sort',
+      alphabet: 'ab',
+      brief: 'Put every a in front of every b.',
+      lesson:
+        'The machine always rewrites the leftmost match, then starts over. A small swap, repeated, can do a large job.',
+      hint: 'Find one pair of neighbours that is certainly out of order. Swap it. The machine does the repeating.',
+      visible: ['baba', 'bbaa', 'ab', 'bbb'],
+      spec: (w) => [...w].sort().join(''),
+      hidden: () => [...allStrings('ab', 7), ...randomStrings('ab', 20, 8, 14, 12)],
+      solution: [R('ba', 'ab')],
+    },
+    {
+      id: 'tidy',
+      name: 'Tidy',
+      alphabet: 'ax',
+      brief: 'Delete every x. Leave the a’s where they are.',
+      lesson: 'A replacement may be empty, which deletes whatever matched.',
+      hint: 'Leave the replacement box empty.',
+      visible: ['axxa', 'xxx', 'a', 'xaxax'],
+      spec: (w) => w.replace(/x/g, ''),
+      hidden: () => [...allStrings('ax', 7), ...randomStrings('ax', 20, 8, 14, 13)],
+      solution: [R('x', '')],
+    },
+    {
+      id: 'parity',
+      name: 'Even or odd',
+      alphabet: 'a',
+      brief: 'Count the a’s. Answer E if the count is even, O if it is odd. Zero counts as even.',
+      lesson:
+        'Order is priority. A rule lower in the list only gets a turn when nothing above it matches, so the last rule can mean “nothing else applied”. A rule marked stop ends the run as soon as it fires.',
+      hint: 'Cancel the a’s in pairs. At most one a is left over. Then ask what is left.',
+      visible: ['aaa', 'aaaa', 'a', ''],
+      spec: (w) => (w.length % 2 === 0 ? 'E' : 'O'),
+      hidden: () => allStrings('a', 30),
+      solution: [R('aa', ''), R('a', 'O', true), R('', 'E', true)],
+    },
+    {
+      id: 'double',
+      name: 'Doubler',
+      alphabet: '1',
+      brief: 'Replace every 1 with two 1s, so 111 becomes 111111.',
+      lesson:
+        'You can write your own symbols. A marker, walked along the string, lets the machine remember where it is. An empty pattern matches at the start of any string, which is how a program plants its first marker.',
+      hint: 'Put the empty-pattern rule at the bottom. It plants a marker once. The rules above it move the marker along, and one marked stop rule removes it at the end.',
+      visible: ['1', '111', '11111', ''],
+      spec: (w) => w + w,
+      hidden: () => allStrings('1', 30),
+      solution: [R('|1', '11|'), R('|', '', true), R('', '|')],
+    },
+    {
+      id: 'increment',
+      name: 'Add one',
+      alphabet: '01',
+      brief: 'A binary number comes in, most significant bit first. Send it back plus one. Keep leading zeros, but grow by one digit if every bit was 1.',
+      lesson:
+        'Carrying is the same trick as the doubler: send a marker along the string, turn it around at the end, and let it move back leftward doing the work.',
+      hint: 'Use two markers: one that walks right until it falls off the end, and one that carries leftward. A 0 meeting the carry becomes 1 and the job is done.',
+      visible: ['0', '1', '101', '111', '1011'],
+      spec: (w) => {
+        if (/^1*$/.test(w)) return '1' + '0'.repeat(w.length);
+        const i = w.lastIndexOf('0');
+        return w.slice(0, i) + '1' + '0'.repeat(w.length - i - 1);
+      },
+      hidden: () => [...allStrings('01', 7, 1), ...randomStrings('01', 20, 8, 14, 14)],
+      solution: [
+        R('>0', '0>'),
+        R('>1', '1>'),
+        R('>', '<'),
+        R('0<', '1', true),
+        R('1<', '<0'),
+        R('<', '1', true),
+        R('', '>'),
+      ],
+    },
+    {
+      id: 'balanced',
+      name: 'Balanced',
+      alphabet: '()',
+      brief: 'Parentheses come in. Answer Y if every ( has a matching ) in the right order, otherwise N. The empty string is balanced.',
+      lesson:
+        'Reduction: remove what you understand, and look at what is left. A rule that rewrites something into itself with stop is a legitimate way to say “this is the answer”.',
+      hint: 'Delete () pairs first. Whatever survives is unbalanced. Turn one survivor into an N and let the N swallow its neighbours. Y is the answer when nothing at all is left.',
+      visible: ['()', '(())', '(()', ')(', '()()', ''],
+      spec: (w) => {
+        let d = 0;
+        for (const c of w) {
+          d += c === '(' ? 1 : -1;
+          if (d < 0) return 'N';
+        }
+        return d === 0 ? 'Y' : 'N';
+      },
+      hidden: () => [
+        ...allStrings('()', 8),
+        ...randomStrings('()', 15, 9, 16, 15),
+        ...randomBalanced(15, 8, 16),
+      ],
+      solution: [
+        R('()', ''),
+        R('N(', 'N'),
+        R('N)', 'N'),
+        R(')N', 'N'),
+        R('N', 'N', true),
+        R('(', 'N'),
+        R(')', 'N'),
+        R('', 'Y', true),
+      ],
+    },
+    {
+      id: 'reverse',
+      name: 'Reverse',
+      alphabet: 'ab',
+      brief: 'Send the string back reversed.',
+      lesson:
+        'The hardest thing the machine can’t do in one move is carry something across a long stretch. Capital letters can stand for “this letter, in transit”.',
+      hint: 'Keep a finished part on the left, behind a ^ wall, and a marker | between it and the rest. Take the first letter after |, turn it into a capital, and let the capital walk left until it hits ^. Then turn it back.',
+      visible: ['abb', 'ab', 'aab', 'a', ''],
+      spec: (w) => [...w].reverse().join(''),
+      hidden: () => [...allStrings('ab', 7), ...randomStrings('ab', 20, 8, 12, 17)],
+      solution: [
+        R('aA', 'Aa'),
+        R('bA', 'Ab'),
+        R('aB', 'Ba'),
+        R('bB', 'Bb'),
+        R('^A', '^a'),
+        R('^B', '^b'),
+        R('|a', 'A|'),
+        R('|b', 'B|'),
+        R('|', ''),
+        R('^', '', true),
+        R('', '^|'),
+      ],
+    },
+  ];
+
+  // Runs the player's rules on the visible cases and on the hidden ones.
+  function check(level, rules) {
+    const rs = activeRules(rules);
+    const verdict = (input) => {
+      const expected = level.spec(input);
+      const res = run(rs, input, { prepared: true });
+      const ok = (res.status === 'done' || res.status === 'halted') && res.output === expected;
+      return { input, expected, got: res.output, status: res.status, steps: res.steps, ok };
+    };
+    const visible = level.visible.map(verdict);
+    const seen = new Set(level.visible);
+    const hiddenInputs = [...new Set(level.hidden())].filter((w) => !seen.has(w));
+    let firstFail = null;
+    let passed = 0;
+    for (const w of hiddenInputs) {
+      const v = verdict(w);
+      if (v.ok) passed++;
+      else if (!firstFail) firstFail = v;
+    }
+    const visibleOk = visible.every((v) => v.ok);
+    const hiddenOk = passed === hiddenInputs.length;
+    return {
+      visible,
+      hidden: { total: hiddenInputs.length, passed, firstFail },
+      ruleCount: rs.length,
+      solved: visibleOk && hiddenOk,
+    };
+  }
+
+  return { run, check, levels, activeRules, clean, MAX_STEPS, MAX_LEN };
+})();
+if (typeof module !== 'undefined') module.exports = Rewrite;
+
+</script>
+<script>
+// Rewrite: the interface. Depends on core.js (the global `Rewrite`).
+(function () {
+  'use strict';
+  const Core = Rewrite;
+  const LEVELS = Core.levels;
+  const SANDBOX = {
+    id: 'sandbox',
+    name: 'Sandbox',
+    alphabet: '',
+    sandbox: true,
+    brief: 'No task and no tests. Write any rules, feed in any string, and watch what the machine does with them.',
+    lesson: 'Good things to try: a rule that grows the string until it hits the 300-character wall, two rules that undo each other, a stop rule with an empty pattern.',
+    hint: '',
+    visible: [],
+  };
+  const MAX_RULES = 16;
+  const DELAYS = [700, 360, 160, 60, 18];
+  const KEY = 'rewrite.v1';
+
+  const $ = (sel, root = document) => root.querySelector(sel);
+  function h(tag, props, ...kids) {
+    const node = document.createElement(tag);
+    for (const [k, v] of Object.entries(props || {})) {
+      if (k === 'class') node.className = v;
+      else if (k === 'text') node.textContent = v;
+      else if (k.startsWith('on')) node.addEventListener(k.slice(2), v);
+      else if (v === true) node.setAttribute(k, '');
+      else if (v !== false && v != null) node.setAttribute(k, v);
+    }
+    for (const kid of kids.flat()) if (kid != null) node.append(kid);
+    return node;
+  }
+
+  // ---- saved progress: a convenience, never required ----
+  let store = { level: 'flip', rules: {}, solved: {}, input: {} };
+  function loadStore() {
+    try {
+      const raw = localStorage.getItem(KEY);
+      if (raw) {
+        const o = JSON.parse(raw);
+        store = { level: 'flip', rules: {}, solved: {}, input: {}, ...o };
+      }
+    } catch (e) { /* storage unavailable: carry on without it */ }
+  }
+  function saveStore() {
+    try { localStorage.setItem(KEY, JSON.stringify(store)); } catch (e) { /* ignore */ }
+  }
+
+  // ---- state ----
+  const S = {
+    level: LEVELS[0],
+    rules: [],
+    input: '',
+    run: null,
+    rowOf: [], // active rule index -> row index
+    k: 0,
+    timer: null,
+    verdict: null,
+  };
+
+  const rowBlank = (r) => Core.clean(r.from) === '' && Core.clean(r.to) === '' && !r.halt;
+  const blankRow = () => ({ from: '', to: '', halt: false });
+  const starterRules = (lv) => (lv.id === 'flip' ? [{ from: 'a', to: '', halt: false }] : [blankRow()]);
+
+  function allLevels() { return [...LEVELS, SANDBOX]; }
+  function levelIndex(lv) { return allLevels().indexOf(lv); }
+
+  function setLevel(id, fresh) {
+    stopTimer();
+    const lv = allLevels().find((l) => l.id === id) || LEVELS[0];
+    S.level = lv;
+    store.level = lv.id;
+    S.rules = (!fresh && store.rules[lv.id]) || starterRules(lv);
+    S.rules = S.rules.map((r) => ({ from: r.from || '', to: r.to || '', halt: !!r.halt }));
+    if (!S.rules.length) S.rules = [blankRow()];
+    S.input = store.input[lv.id] != null ? store.input[lv.id] : lv.visible[0] != null ? lv.visible[0] : 'ab';
+    if (lv.sandbox && store.input[lv.id] == null) S.input = 'aab';
+    S.verdict = null;
+    saveStore();
+    recompute();
+    renderAll();
+  }
+
+  function persistRules() {
+    store.rules[S.level.id] = S.rules;
+    store.input[S.level.id] = S.input;
+    saveStore();
+  }
+
+  function recompute() {
+    const rows = [];
+    S.rules.forEach((r, i) => { if (!rowBlank(r)) rows.push(i); });
+    S.rowOf = rows;
+    const prepared = Core.activeRules(S.rules);
+    S.run = Core.run(prepared, S.input, { prepared: true, trace: true });
+    S.k = 0;
+  }
+
+  function current() {
+    const t = S.run.trace;
+    return S.k === 0 ? Core.clean(S.input) : t[S.k - 1].after;
+  }
+  const total = () => S.run.trace.length;
+  const atEnd = () => S.k >= total();
+
+  // ---- rendering: levels + brief ----
+  function renderLevels() {
+    const nav = $('#levels');
+    nav.replaceChildren();
+    allLevels().forEach((lv, i) => {
+      const solved = store.solved[lv.id];
+      nav.append(
+        h('button', {
+          type: 'button',
+          class: 'level-chip',
+          'aria-current': String(lv === S.level),
+          onclick: () => setLevel(lv.id),
+        },
+        h('span', { class: 'n', text: lv.sandbox ? '∞' : String(i + 1) }),
+        h('span', { class: 'nm', text: lv.name }),
+        solved ? h('span', { class: 'done', text: '✓ ' + solved }) : null),
+      );
+    });
+  }
+
+  function renderBrief() {
+    const lv = S.level;
+    const box = $('#brief');
+    box.replaceChildren();
+    const solved = store.solved[lv.id];
+    const par = lv.solution ? lv.solution.length : null;
+    box.append(
+      h('div', { class: 'level-no', text: lv.sandbox ? 'Free play' : `Level ${levelIndex(lv) + 1} of ${LEVELS.length}` }),
+      h('h2', {}, lv.name, solved ? h('span', { class: 'solved-tag', text: `Solved in ${solved}` }) : null),
+      h('p', { class: 'task', text: lv.brief }),
+      h('p', { class: 'lesson', text: lv.lesson }),
+    );
+    if (!lv.sandbox) {
+      box.append(h('div', { class: 'meta' },
+        h('span', {}, 'Symbols in the input: ', h('b', { class: 'mono', text: lv.alphabet.split('').join(' ') })),
+        h('span', {}, 'Par: ', h('b', { text: `${par} rule${par === 1 ? '' : 's'}` })),
+      ));
+      box.append(h('details', {}, h('summary', { text: 'Hint' }), h('p', { text: lv.hint })));
+    }
+    box.append(
+      h('details', {},
+        h('summary', { text: 'How the machine works' }),
+        h('ul', { class: 'howto' },
+          h('li', { text: 'It looks down the rule list for the first rule whose pattern appears anywhere in the string.' }),
+          h('li', { text: 'It rewrites the leftmost place that pattern appears, then starts again from the top of the list.' }),
+          h('li', { text: 'An empty pattern matches at the very start of the string, every time.' }),
+          h('li', { text: 'It stops when no rule matches, or right after a rule marked stop fires.' }),
+          h('li', { text: 'It also stops, and the run fails, after 5000 steps or if the string passes 300 characters.' }),
+          h('li', { text: 'Spaces are ignored. Any symbol you add beyond the level’s own is a marker and shows in a different colour.' }),
+        ),
+      ),
+    );
+  }
+
+  // ---- rules ----
+  function renderRules() {
+    const list = $('#rule-list');
+    list.replaceChildren();
+    S.rules.forEach((r, i) => {
+      const blank = rowBlank(r);
+      const row = h('div', { class: 'rule' + (blank ? ' is-blank' : ''), 'data-row': String(i) });
+      const from = h('input', {
+        class: 'mono-input', type: 'text', value: r.from, maxlength: '14', autocomplete: 'off', spellcheck: 'false',
+        placeholder: 'start of string', 'aria-label': `Pattern for rule ${i + 1}`,
+      });
+      const to = h('input', {
+        class: 'mono-input', type: 'text', value: r.to, maxlength: '14', autocomplete: 'off', spellcheck: 'false',
+        placeholder: 'nothing', 'aria-label': `Replacement for rule ${i + 1}`,
+      });
+      from.addEventListener('input', () => { r.from = from.value; onRulesChanged(i); });
+      to.addEventListener('input', () => { r.to = to.value; onRulesChanged(i); });
+      const stop = h('input', { type: 'checkbox', 'aria-label': `Rule ${i + 1} stops the run` });
+      stop.checked = !!r.halt;
+      stop.addEventListener('change', () => { r.halt = stop.checked; onRulesChanged(i); });
+      const up = h('button', { type: 'button', class: 'icon-btn', 'aria-label': `Move rule ${i + 1} up`, text: '↑', disabled: i === 0, onclick: () => moveRule(i, -1) });
+      const down = h('button', { type: 'button', class: 'icon-btn', 'aria-label': `Move rule ${i + 1} down`, text: '↓', disabled: i === S.rules.length - 1, onclick: () => moveRule(i, 1) });
+      const del = h('button', { type: 'button', class: 'icon-btn', 'aria-label': `Delete rule ${i + 1}`, text: 'Delete', onclick: () => deleteRule(i) });
+      row.append(
+        h('span', { class: 'pri', text: String(i + 1) }),
+        from,
+        h('span', { class: 'arrow', text: '→' }),
+        to,
+        h('div', { class: 'row-tools' },
+          h('label', { class: 'stop-toggle' }, stop, 'stop after this rule'),
+          h('span', { class: 'blank-note', 'data-blank': String(i), text: blank ? 'Blank, so the machine skips it' : '' }),
+          h('span', { class: 'spacer' }),
+          up, down, del),
+      );
+      list.append(row);
+    });
+    $('#add-rule').disabled = S.rules.length >= MAX_RULES;
+    markNextRule();
+  }
+
+  function onRulesChanged(i) {
+    stopTimer();
+    const note = $(`[data-blank="${i}"]`);
+    const rowEl = $(`[data-row="${i}"]`);
+    const blank = rowBlank(S.rules[i]);
+    if (note) note.textContent = blank ? 'Blank, so the machine skips it' : '';
+    if (rowEl) rowEl.classList.toggle('is-blank', blank);
+    S.verdict = null;
+    persistRules();
+    recompute();
+    renderMachine();
+    renderTests();
+    renderVerdict();
+  }
+  function moveRule(i, d) {
+    const j = i + d;
+    if (j < 0 || j >= S.rules.length) return;
+    [S.rules[i], S.rules[j]] = [S.rules[j], S.rules[i]];
+    afterStructuralChange();
+  }
+  function deleteRule(i) {
+    S.rules.splice(i, 1);
+    if (!S.rules.length) S.rules.push(blankRow());
+    afterStructuralChange();
+  }
+  function afterStructuralChange() {
+    stopTimer();
+    S.verdict = null;
+    persistRules();
+    recompute();
+    renderRules();
+    renderMachine();
+    renderTests();
+    renderVerdict();
+  }
+  function markNextRule() {
+    document.querySelectorAll('.rule.next').forEach((e) => e.classList.remove('next'));
+    if (!S.run || atEnd()) return;
+    const row = S.rowOf[S.run.trace[S.k].rule];
+    const el = $(`[data-row="${row}"]`);
+    if (el) el.classList.add('next');
+  }
+
+  // ---- machine ----
+  function isMarker(ch) { return !S.level.sandbox && !S.level.alphabet.includes(ch); }
+
+  function renderTape() {
+    const tape = $('#tape');
+    tape.replaceChildren();
+    const s = current();
+    const t = S.run.trace;
+    const next = !atEnd() ? t[S.k] : null;
+    const prev = S.k > 0 ? t[S.k - 1] : null;
+    if (s === '' && !(next && next.len === 0)) {
+      tape.append(h('span', { class: 'empty-tape', text: 'empty string' }));
+      return;
+    }
+    const chars = [...s];
+    chars.forEach((ch, i) => {
+      if (next && next.len === 0 && next.pos === i) tape.append(h('span', { class: 'caret', title: 'The next rule writes here', 'aria-hidden': 'true' }));
+      let cls = 'tile';
+      if (isMarker(ch)) cls += ' marker';
+      if (next && next.len > 0 && i >= next.pos && i < next.pos + next.len) cls += ' match';
+      if (prev && i >= prev.pos && i < prev.pos + (prev.after.length - prev.before.length + prev.len)) cls += ' fresh';
+      tape.append(h('span', { class: cls, text: ch }));
+    });
+    if (next && next.len === 0 && next.pos >= chars.length) tape.append(h('span', { class: 'caret', 'aria-hidden': 'true' }));
+  }
+
+  function renderExpect() {
+    const box = $('#expect');
+    box.replaceChildren();
+    const lv = S.level;
+    if (lv.sandbox) return;
+    const w = Core.clean(S.input);
+    if (![...w].every((c) => lv.alphabet.includes(c))) return;
+    let want;
+    try { want = lv.spec(w); } catch (e) { return; }
+    box.append('Target for this input: ', h('code', { text: want === '' ? 'empty string' : want }));
+    if (atEnd()) {
+      const got = current();
+      const fine = got === want && (S.run.status === 'done' || S.run.status === 'halted');
+      box.append('  ', h('span', { class: fine ? 'match-yes' : 'match-no', text: fine ? 'Match' : 'Not a match' }));
+    }
+  }
+
+  function statusText() {
+    const n = total();
+    if (!atEnd()) {
+      const t = S.run.trace[S.k];
+      const rowNo = S.rowOf[t.rule] + 1;
+      const where = t.len === 0 ? `at the start` : `at position ${t.pos + 1}`;
+      return [h('span', { class: 'k', text: `Step ${S.k} of ${n}. ` }), `Next: rule ${rowNo} ${where}.`];
+    }
+    const lead = h('span', { class: 'k', text: `Step ${S.k} of ${n}. ` });
+    switch (S.run.status) {
+      case 'halted': return [lead, 'Stopped: a stop rule fired.'];
+      case 'limit': return [lead, `Gave up after ${Core.MAX_STEPS} steps. The rules never settle on this input.`];
+      case 'overflow': return [lead, `Stopped: the string grew past ${Core.MAX_LEN} characters.`];
+      default: return [lead, n === 0 ? 'No rule matches this string, so nothing happens.' : 'Stopped: no rule matches any more.'];
+    }
+  }
+
+  function renderStatus() {
+    const st = $('#status');
+    st.replaceChildren(...statusText());
+  }
+
+  function renderLog() {
+    const ol = $('#log');
+    ol.replaceChildren();
+    const t = S.run.trace;
+    const mk = (i, label, s, rule, cls) => h('li', { class: cls || '', onclick: () => { stopTimer(); S.k = i; renderMachine(); } },
+      h('span', { class: 'i', text: String(i) }),
+      h('span', { class: 's', text: s === '' ? '(empty)' : s }),
+      h('span', { class: 'rl', text: rule }));
+    ol.append(mk(0, '', Core.clean(S.input), 'start', S.k === 0 ? 'now' : ''));
+    const MAXROWS = 300;
+    const show = (idx) => {
+      const x = t[idx];
+      ol.append(mk(idx + 1, '', x.after, `rule ${S.rowOf[x.rule] + 1}`, S.k === idx + 1 ? 'now' : ''));
+    };
+    if (t.length <= MAXROWS) t.forEach((_, idx) => show(idx));
+    else {
+      for (let idx = 0; idx < MAXROWS / 2; idx++) show(idx);
+      ol.append(h('li', {}, h('span', { class: 'rl', text: `… ${t.length - MAXROWS} steps not listed …` })));
+      for (let idx = t.length - MAXROWS / 2; idx < t.length; idx++) show(idx);
+    }
+    const now = ol.querySelector('.now');
+    if (now && $('#log-wrap').open) now.scrollIntoView({ block: 'nearest' });
+  }
+
+  function renderControls() {
+    const running = S.timer != null;
+    $('#btn-run').textContent = running ? 'Pause' : 'Run';
+    $('#btn-step').disabled = atEnd();
+    $('#btn-end').disabled = atEnd();
+    $('#btn-reset').disabled = S.k === 0;
+  }
+
+  function renderMachine() {
+    renderTape();
+    renderExpect();
+    renderStatus();
+    renderLog();
+    renderControls();
+    markNextRule();
+    renderChips();
+  }
+
+  function renderChips() {
+    const box = $('#input-chips');
+    box.replaceChildren();
+    const lv = S.level;
+    const cur = Core.clean(S.input);
+    lv.visible.forEach((w) => {
+      let tick = null;
+      let cls = 'chip';
+      if (!lv.sandbox) {
+        const r = Core.run(Core.activeRules(S.rules), w, { prepared: true });
+        const good = (r.status === 'done' || r.status === 'halted') && r.output === lv.spec(w);
+        cls += good ? ' ok' : ' no';
+        tick = h('span', { class: 'tick', text: good ? '✓' : '✗', 'aria-label': good ? 'passes' : 'fails' });
+      }
+      box.append(h('button', { type: 'button', class: cls, 'aria-pressed': String(cur === w), onclick: () => setInput(w) }, w === '' ? 'empty' : w, tick));
+    });
+  }
+
+  function setInput(w) {
+    stopTimer();
+    S.input = w;
+    $('#trial-input').value = w;
+    persistRules();
+    recompute();
+    renderMachine();
+    renderTests();
+  }
+
+  function randomInput() {
+    const alpha = S.level.sandbox ? 'ab' : S.level.alphabet;
+    if (S.level.id === 'balanced') {
+      const n = 2 + Math.floor(Math.random() * 7);
+      let w = '';
+      for (let i = 0; i < n; i++) w += Math.random() < 0.5 ? '(' : ')';
+      return w;
+    }
+    const n = 2 + Math.floor(Math.random() * 7);
+    let w = '';
+    for (let i = 0; i < n; i++) w += alpha[Math.floor(Math.random() * alpha.length)];
+    return w;
+  }
+
+  // ---- running ----
+  function stopTimer() {
+    if (S.timer != null) { clearInterval(S.timer); S.timer = null; }
+  }
+  function stepOnce() {
+    if (atEnd()) { stopTimer(); return false; }
+    S.k++;
+    return true;
+  }
+  function toggleRun() {
+    if (S.timer != null) { stopTimer(); renderControls(); return; }
+    if (atEnd()) S.k = 0;
+    const speed = Number($('#speed').value) - 1;
+    const tick = () => {
+      stepOnce();
+      renderMachine();
+      if (atEnd()) { stopTimer(); renderControls(); }
+    };
+    S.timer = setInterval(tick, DELAYS[speed]);
+    tick();
+  }
+
+  // ---- tests ----
+  function renderTests() {
+    const lv = S.level;
+    const card = $('#tests-card');
+    card.hidden = !!lv.sandbox;
+    if (lv.sandbox) return;
+    const prepared = Core.activeRules(S.rules);
+    const list = $('#test-list');
+    list.replaceChildren();
+    let pass = 0;
+    const cur = Core.clean(S.input);
+    lv.visible.forEach((w) => {
+      const want = lv.spec(w);
+      const r = Core.run(prepared, w, { prepared: true });
+      const good = (r.status === 'done' || r.status === 'halted') && r.output === want;
+      if (good) pass++;
+      const gotText = r.status === 'limit' ? 'never stops' : r.status === 'overflow' ? 'grows without end' : r.output === '' ? 'empty' : r.output;
+      list.append(h('button', {
+        type: 'button', class: 'test-row ' + (good ? 'ok' : 'no'), 'aria-pressed': String(cur === w),
+        onclick: () => setInput(w),
+      },
+      h('span', { class: 'cell' }, h('small', { text: 'in' }), w === '' ? 'empty' : w),
+      h('span', { class: 'arrow', text: '→' }),
+      h('span', { class: 'cell' }, h('small', { text: good ? 'out' : `want ${want === '' ? 'empty' : want}, got` }), good ? (want === '' ? 'empty' : want) : gotText),
+      h('span', { class: 'mark', text: good ? '✓' : '✗', 'aria-label': good ? 'passes' : 'fails' })));
+    });
+    $('#tests-sub').textContent = `${pass} of ${lv.visible.length} shown cases pass. Check also runs hidden cases.`;
+    const n = Core.activeRules(S.rules).length;
+    $('#check-note').textContent = `${n} rule${n === 1 ? '' : 's'} in use. Par is ${lv.solution.length}.`;
+  }
+
+  function doCheck() {
+    stopTimer();
+    const lv = S.level;
+    const res = Core.check(lv, S.rules);
+    S.verdict = { res, level: lv.id };
+    if (res.solved) {
+      const prev = store.solved[lv.id];
+      if (prev == null || res.ruleCount < prev) store.solved[lv.id] = res.ruleCount;
+      saveStore();
+      renderLevels();
+      renderBrief();
+    }
+    renderVerdict();
+  }
+
+  function renderVerdict() {
+    const box = $('#verdict');
+    box.replaceChildren();
+    box.className = 'verdict';
+    if (!S.verdict || S.verdict.level !== S.level.id) return;
+    const { res } = S.verdict;
+    const lv = S.level;
+    const par = lv.solution.length;
+    if (res.solved) {
+      box.classList.add('win');
+      const diff = res.ruleCount - par;
+      const line = diff < 0 ? `${-diff} under par: shorter than the reference solution.` : diff === 0 ? 'Exactly par.' : `${diff} over par. The reference uses ${par}; there is a shorter way.`;
+      box.append(h('h3', { text: 'Solved' }),
+        h('p', { text: `${res.ruleCount} rule${res.ruleCount === 1 ? '' : 's'}. ${line}` }),
+        h('p', { text: `All ${res.visible.length} shown cases and ${res.hidden.total} hidden cases pass.` }));
+      const idx = LEVELS.indexOf(lv);
+      const nextLv = LEVELS[idx + 1];
+      box.append(nextLv
+        ? h('button', { type: 'button', class: 'btn btn-primary', onclick: () => setLevel(nextLv.id), text: `Next: ${nextLv.name}` })
+        : h('button', { type: 'button', class: 'btn btn-primary', onclick: () => setLevel('sandbox'), text: 'Go to the sandbox' }));
+    } else {
+      box.classList.add('lose');
+      const vis = res.visible.filter((v) => !v.ok).length;
+      box.append(h('h3', { text: 'Not yet' }));
+      if (vis) box.append(h('p', { text: `${vis} of the shown cases fail. Click one to watch it run.` }));
+      else if (res.hidden.firstFail) {
+        const f = res.hidden.firstFail;
+        const gotText = f.status === 'limit' ? 'it never stops' : f.status === 'overflow' ? 'the string grows without end' : `the machine returns ${f.got === '' ? 'the empty string' : f.got}`;
+        box.append(
+          h('p', { text: `The shown cases pass, but ${res.hidden.total - res.hidden.passed} of ${res.hidden.total} hidden cases fail.` }),
+          h('p', {}, 'For example, on ', h('code', { text: f.input === '' ? 'the empty string' : f.input }), `: expected ${f.expected === '' ? 'the empty string' : f.expected}, but ${gotText}.`),
+          h('button', { type: 'button', class: 'btn', onclick: () => setInput(f.input), text: 'Try that input' }));
+      }
+    }
+  }
+
+  function renderAll() {
+    renderLevels();
+    renderBrief();
+    renderRules();
+    $('#trial-input').value = S.input;
+    $('#machine-sub').textContent = S.level.sandbox ? 'Any string, any rules.' : 'Run any input to see the machine work.';
+    renderMachine();
+    renderTests();
+    renderVerdict();
+  }
+
+  // ---- wiring ----
+  function init() {
+    loadStore();
+    $('#add-rule').addEventListener('click', () => {
+      if (S.rules.length >= MAX_RULES) return;
+      S.rules.push(blankRow());
+      afterStructuralChange();
+      const rows = document.querySelectorAll('.rule');
+      const last = rows[rows.length - 1];
+      if (last) $('input', last).focus();
+    });
+    $('#clear-rules').addEventListener('click', () => {
+      S.rules = [blankRow()];
+      afterStructuralChange();
+    });
+    $('#trial-input').addEventListener('input', (e) => {
+      stopTimer();
+      S.input = e.target.value;
+      persistRules();
+      recompute();
+      renderMachine();
+      renderTests();
+    });
+    $('#random-input').addEventListener('click', () => setInput(randomInput()));
+    $('#btn-reset').addEventListener('click', () => { stopTimer(); S.k = 0; renderMachine(); });
+    $('#btn-step').addEventListener('click', () => { stopTimer(); stepOnce(); renderMachine(); });
+    $('#btn-run').addEventListener('click', () => { toggleRun(); renderControls(); });
+    $('#btn-end').addEventListener('click', () => { stopTimer(); S.k = total(); renderMachine(); });
+    $('#btn-check').addEventListener('click', doCheck);
+    $('#log-wrap').addEventListener('toggle', () => { if ($('#log-wrap').open) renderLog(); });
+    const start = store.level && allLevels().some((l) => l.id === store.level) ? store.level : 'flip';
+    setLevel(start);
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
+})();
+
+</script>
